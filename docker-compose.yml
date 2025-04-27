@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  # Backend (Node.js/Express)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: .dockerfile
+    container_name: toolbox-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - CORS_ORIGIN=*
+      - SECRET_SERVICE_URL=https://echo-serv.tbxnet.com/v1/secret
+      - SECRET_SERVICE_KEY=aSuperSecretKey
+      - USE_LOGGER=false
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Frontend (React/Vite)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: .dockerfile
+    container_name: toolbox-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost:3000/api
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
